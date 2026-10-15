@@ -175,7 +175,7 @@ export const CallAnalyticsView: React.FC<CallAnalyticsViewProps> = ({
         <div className="mt-4 overflow-x-auto">
           <table className="w-full border-collapse border-2 border-black text-xs">
             <thead>
-              <tr className="border-b-2 border-black bg-[#FFE600] font-black uppercase text-black">
+              <tr className="border-b-2 border-black bg-[#00D8F6] font-black uppercase text-black">
                 <th className="border-r-2 border-black p-2 text-left">Staff Name</th>
                 <th className="border-r-2 border-black p-2 text-center">Ext</th>
                 <th className="border-r-2 border-black p-2 text-right">Total Calls</th>

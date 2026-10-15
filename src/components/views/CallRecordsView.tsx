@@ -109,7 +109,7 @@ export const CallRecordsView: React.FC<CallRecordsViewProps> = ({
       <body>
         <table border="1">
           <thead>
-            <tr style="background:#FFE600;font-weight:bold;">
+            <tr style="background:#00D8F6;font-weight:bold;">
               <th>UID</th>
               <th>Timestamp</th>
               <th>Phone</th>
@@ -182,7 +182,7 @@ export const CallRecordsView: React.FC<CallRecordsViewProps> = ({
           </button>
           <button
             onClick={handleExportExcel}
-            className="flex items-center gap-1.5 border-2 border-black bg-[#FFE600] px-3 py-1.5 text-xs font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-yellow-300 active:translate-x-0.5 active:translate-y-0.5"
+            className="flex items-center gap-1.5 border-2 border-black bg-[#00D8F6] px-3 py-1.5 text-xs font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-[#22D3EE] active:translate-x-0.5 active:translate-y-0.5"
           >
             <FileSpreadsheet className="h-4 w-4" />
             <span>Export Excel</span>
@@ -195,10 +195,10 @@ export const CallRecordsView: React.FC<CallRecordsViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-xs">
             <thead>
-              <tr className="border-b-2 border-black bg-[#FFE600] font-black uppercase text-black">
+              <tr className="border-b-2 border-black bg-[#581C87] font-black uppercase text-white">
                 <th
                   onClick={() => handleSort('epochMs')}
-                  className="border-r-2 border-black p-2.5 text-left cursor-pointer hover:bg-yellow-300"
+                  className="border-r-2 border-black p-2.5 text-left cursor-pointer hover:bg-[#6D28D9]"
                 >
                   UID / Timestamp {sortField === 'epochMs' && (sortOrder === 'desc' ? '▼' : '▲')}
                 </th>
@@ -311,7 +311,7 @@ export const CallRecordsView: React.FC<CallRecordsViewProps> = ({
                       <td className="p-2.5 text-center">
                         <button
                           onClick={() => setSelectedRecord(r)}
-                          className="border border-black p-1 hover:bg-[#FFE600]"
+                          className="border border-black p-1 hover:bg-[#00D8F6]"
                           title="Inspect full raw record"
                         >
                           <Eye className="h-3.5 w-3.5" />

@@ -69,13 +69,13 @@ export const MissedCallsView: React.FC<MissedCallsViewProps> = ({
                   if (status === 'Confirmed Successful') statusBg = 'bg-[#00D26A] text-black';
                   else if (status === 'Estimated Connected') statusBg = 'bg-emerald-100 text-emerald-800';
                   else if (status === 'Estimated Attempt') statusBg = 'bg-amber-100 text-amber-800';
-                  else if (status === 'Ambiguous Match') statusBg = 'bg-[#FFE600] text-black';
+                  else if (status === 'Ambiguous Match') statusBg = 'bg-cyan-100 text-cyan-900';
                   else if (status === 'Pending') statusBg = 'bg-[#FF334B] text-white';
 
                   return (
                     <tr
                       key={call.uid}
-                      className="border-b border-black font-semibold hover:bg-yellow-50 transition-colors"
+                      className="border-b border-black font-semibold hover:bg-purple-50/50 transition-colors"
                     >
                       <td className="border-r-2 border-black p-2.5">
                         <div className="font-mono font-bold text-black">{call.uid}</div>
@@ -120,7 +120,7 @@ export const MissedCallsView: React.FC<MissedCallsViewProps> = ({
                         {match && (
                           <button
                             onClick={() => onOpenTriageModal(match)}
-                            className="flex items-center gap-1 border-2 border-black bg-[#FFE600] px-2.5 py-1 text-[11px] font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-yellow-300 active:translate-x-0.5 active:translate-y-0.5"
+                            className="flex items-center gap-1 border-2 border-black bg-[#00D8F6] px-2.5 py-1 text-[11px] font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-[#22D3EE] active:translate-x-0.5 active:translate-y-0.5"
                           >
                             <PhoneForwarded className="h-3 w-3" />
                             <span>Verify</span>

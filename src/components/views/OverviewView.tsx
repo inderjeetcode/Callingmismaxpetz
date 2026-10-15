@@ -33,7 +33,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
     <div className="space-y-6 p-4 md:p-6">
       {/* High-Impact Alert Bar */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="border-3 border-black bg-[#FFE600] p-4 shadow-[3px_3px_0px_#000]">
+        <div className="border-3 border-black bg-[#00D8F6] p-4 shadow-[3px_3px_0px_#000]">
           <div className="flex items-center justify-between">
             <span className="text-xs font-black uppercase tracking-wider text-black">
               Incoming Answer Rate
@@ -119,7 +119,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             title="1. Total Calls"
             value={kpis.totalCalls}
             delta={kpis.comparisons?.totalCallsDelta}
-            colorTheme="yellow"
+            colorTheme="cyan"
             subtext="All unique records"
             onClick={() => onFilterCategory?.('all')}
           />
@@ -211,7 +211,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           <KPICard
             title="10. Callback Attempts"
             value={kpis.callbackAttempts}
-            colorTheme="yellow"
+            colorTheme="cyan"
             subtext="Outbound retries"
             onClick={() => onFilterCategory?.('Callbacks')}
           />

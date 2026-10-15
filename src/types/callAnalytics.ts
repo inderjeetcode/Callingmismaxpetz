@@ -272,3 +272,66 @@ export interface DataQualitySummary {
   unclassifiedEvents: number;
   validDurationRecords: number;
 }
+
+// ==================== REPEATED CALL TRACKING TYPES ====================
+
+export type RepeatCallCategory =
+  | 'All'
+  | 'Repeated Incoming'
+  | 'Repeated Outgoing'
+  | 'Repeated Missed'
+  | 'Callback Candidate'
+  | 'Callback Attempted'
+  | 'Callback Connected'
+  | 'Callback Confirmed'
+  | 'High Frequency Repeat'
+  | 'Multi-Interaction Repeat';
+
+export type CustomerCallbackStatus =
+  | 'Callback Candidate'
+  | 'Callback Attempted'
+  | 'Callback Connected'
+  | 'Callback Confirmed'
+  | 'No Missed Call';
+
+export interface RepeatCustomerRecord {
+  normalizedPhone: string;
+  displayPhone: string;
+  maskedPhone: string;
+  customerName: string;
+  totalCalls: number;
+  incomingCount: number;
+  incomingConnected: number;
+  incomingMissed: number;
+  outgoingCount: number;
+  outgoingConnected: number;
+  outgoingMissed: number;
+  missedCount: number;
+  connectedCount: number;
+  firstCallTimestamp: string;
+  firstCallEpochMs: number;
+  latestCallTimestamp: string;
+  latestCallEpochMs: number;
+  latestCallStatus: CallStatus;
+  latestCallEvent: CallEvent;
+  latestCallDurationSeconds: number;
+  latestStaffName: string;
+  latestDepartment: string;
+  staffList: string[];
+  departmentList: string[];
+  category: RepeatCallCategory;
+  categoryLabel: string;
+  callbackStatus: CustomerCallbackStatus;
+  hasCallbackAttempt: boolean;
+  hasConnectedCallback: boolean;
+  calls: ParsedCallRecord[];
+}
+
+export interface RepeatedCallKPIs {
+  uniqueRepeatCustomers: number;
+  repeatedIncomingCalls: number;
+  repeatedOutgoingAttempts: number;
+  repeatedMissedCalls: number;
+  callbackAttempts: number;
+  connectedRepeatCalls: number;
+}

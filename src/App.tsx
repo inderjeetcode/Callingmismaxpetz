@@ -33,12 +33,14 @@ import { CallAnalyticsView } from './components/views/CallAnalyticsView';
 import { DailyGrowthView } from './components/views/DailyGrowthView';
 import { MissedCallsView } from './components/views/MissedCallsView';
 import { CallbackTrackingView } from './components/views/CallbackTrackingView';
+import { RepeatedCallTrackingView } from './components/views/RepeatedCallTrackingView';
 import { DepartmentPerformanceView } from './components/views/DepartmentPerformanceView';
 import { CallRecordsView } from './components/views/CallRecordsView';
 import { DataSourceSettingsView } from './components/views/DataSourceSettingsView';
 import { CallbackTriageModal } from './components/CallbackTriageModal';
 import { AuditTrailModal } from './components/AuditTrailModal';
 import { AutomatedTestRunner } from './components/AutomatedTestRunner';
+import { analyzeRepeatedCalls } from './services/repeatedCallEngine';
 
 import {
   directClientFetchGoogleSheet,
@@ -477,6 +479,13 @@ export default function App() {
     return filtered.filter((r) => r.event === 'Incoming' && r.status === 'Missed');
   }, [filtered]);
 
+  // Derived Repeated Call Tracking profiles & KPIs
+  const { repeatCustomers, kpis: repeatKpis } = useMemo(() => {
+    return analyzeRepeatedCalls(filtered, callbackConfirmations, {
+      callbackMatchingWindowHours: settings.callbackMatchingWindowHours || 24,
+    });
+  }, [filtered, callbackConfirmations, settings.callbackMatchingWindowHours]);
+
   // Quick filter by KPI card click
   const handleFilterByCategory = (category: string) => {
     if (category === 'all') {
@@ -505,6 +514,8 @@ export default function App() {
       setCurrentView('call_records');
     } else if (category === 'Callbacks' || category === 'Estimated-Successful' || category === 'Confirmed-Successful' || category === 'Pending') {
       setCurrentView('callback_tracking');
+    } else if (category === 'Repeated' || category === 'repeated_calls') {
+      setCurrentView('repeated_calls');
     }
   };
 
@@ -537,6 +548,7 @@ export default function App() {
           onViewChange={setCurrentView}
           missedCallsCount={missedIncomingCalls.length}
           pendingCallbacksCount={kpis.pendingCallbacks}
+          repeatCustomersCount={repeatCustomers.length}
         />
 
         {/* Main Content Area */}
@@ -593,6 +605,16 @@ export default function App() {
               onOpenTriageModal={setTriageMatch}
               onOpenAuditTrail={() => setIsAuditModalOpen(true)}
               maskPhones={maskPhones}
+            />
+          )}
+
+          {currentView === 'repeated_calls' && (
+            <RepeatedCallTrackingView
+              repeatCustomers={repeatCustomers}
+              kpis={repeatKpis}
+              maskPhones={maskPhones}
+              staffMembers={staffMembers}
+              departments={departments}
             />
           )}
 

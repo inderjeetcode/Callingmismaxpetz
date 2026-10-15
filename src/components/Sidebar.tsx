@@ -9,6 +9,7 @@ import {
   TrendingUp,
   PhoneMissed,
   PhoneForwarded,
+  RotateCcw,
   Building2,
   Table,
   Settings,
@@ -20,6 +21,7 @@ export type DashboardView =
   | 'daily_growth'
   | 'missed_calls'
   | 'callback_tracking'
+  | 'repeated_calls'
   | 'department_performance'
   | 'call_records'
   | 'data_settings';
@@ -29,6 +31,7 @@ interface SidebarProps {
   onViewChange: (view: DashboardView) => void;
   missedCallsCount: number;
   pendingCallbacksCount: number;
+  repeatCustomersCount?: number;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -36,6 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onViewChange,
   missedCallsCount,
   pendingCallbacksCount,
+  repeatCustomersCount = 0,
 }) => {
   const navItems: {
     id: DashboardView;
@@ -69,9 +73,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       id: 'callback_tracking',
       label: 'Callback Tracking',
-      icon: <PhoneForwarded className="h-4 w-4 text-amber-600" />,
+      icon: <PhoneForwarded className="h-4 w-4 text-[#0891B2]" />,
       badge: pendingCallbacksCount,
-      badgeColor: 'bg-[#FFE600] text-black',
+      badgeColor: 'bg-[#00D8F6] text-black',
+    },
+    {
+      id: 'repeated_calls',
+      label: 'Repeated Call Tracking',
+      icon: <RotateCcw className="h-4 w-4 text-[#581C87]" />,
+      badge: repeatCustomersCount,
+      badgeColor: 'bg-[#581C87] text-white',
     },
     {
       id: 'department_performance',
@@ -108,18 +119,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => onViewChange(item.id)}
                 className={`flex items-center justify-between border-2 border-black px-3 py-2 text-left text-xs font-black transition-all ${
                   isActive
-                    ? 'bg-[#FFE600] text-black shadow-[3px_3px_0px_#000] translate-x-0.5'
-                    : 'bg-white text-gray-900 hover:bg-gray-100 hover:translate-x-0.5'
+                    ? 'bg-[#581C87] text-white shadow-[3px_3px_0px_#00D8F6] translate-x-0.5'
+                    : 'bg-white text-gray-900 hover:bg-purple-50 hover:text-[#581C87] hover:translate-x-0.5'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
-                  {item.icon}
+                  <span className={isActive ? 'text-[#00D8F6]' : ''}>{item.icon}</span>
                   <span className="truncate">{item.label}</span>
                 </div>
                 {item.badge !== undefined && item.badge > 0 && (
                   <span
                     className={`ml-2 border border-black px-1.5 py-0.2 text-[10px] font-black ${
-                      item.badgeColor || 'bg-black text-white'
+                      isActive ? 'bg-[#00D8F6] text-black' : item.badgeColor || 'bg-black text-white'
                     }`}
                   >
                     {item.badge}

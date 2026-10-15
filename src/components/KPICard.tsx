@@ -11,6 +11,7 @@ export type CardColorTheme =
   | 'red'
   | 'blue'
   | 'purple'
+  | 'cyan'
   | 'neutral';
 
 interface KPICardProps {
@@ -43,7 +44,13 @@ export const KPICard: React.FC<KPICardProps> = ({
   > = {
     yellow: {
       border: 'border-black',
-      accent: 'bg-[#FFE600]',
+      accent: 'bg-[#00D8F6]',
+      bg: 'bg-white',
+      text: 'text-black',
+    },
+    cyan: {
+      border: 'border-black',
+      accent: 'bg-[#00D8F6]',
       bg: 'bg-white',
       text: 'text-black',
     },
@@ -67,7 +74,7 @@ export const KPICard: React.FC<KPICardProps> = ({
     },
     purple: {
       border: 'border-black',
-      accent: 'bg-[#7928CA]',
+      accent: 'bg-[#581C87]',
       bg: 'bg-white',
       text: 'text-black',
     },
@@ -79,7 +86,7 @@ export const KPICard: React.FC<KPICardProps> = ({
     },
   };
 
-  const currentTheme = themeStyles[colorTheme];
+  const currentTheme = themeStyles[colorTheme] || themeStyles.neutral;
 
   // Determine if delta is positive/good
   const isPositive = delta !== undefined && delta !== null && delta > 0;
@@ -102,7 +109,7 @@ export const KPICard: React.FC<KPICardProps> = ({
         currentTheme.bg
       } ${
         onClick ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_#000]' : ''
-      } ${isActive ? 'ring-3 ring-black shadow-[4px_4px_0px_#FFE600]' : 'shadow-[2px_2px_0px_#000]'}`}
+      } ${isActive ? 'ring-3 ring-black shadow-[4px_4px_0px_#00D8F6]' : 'shadow-[2px_2px_0px_#000]'}`}
     >
       {/* Top Header & Color indicator line */}
       <div>

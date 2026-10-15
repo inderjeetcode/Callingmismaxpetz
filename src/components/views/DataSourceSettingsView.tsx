@@ -135,7 +135,7 @@ export const DataSourceSettingsView: React.FC<DataSourceSettingsViewProps> = ({
           <button
             onClick={onRefreshData}
             disabled={isSyncing}
-            className="flex items-center gap-1.5 border-2 border-black bg-[#FFE600] px-3 py-1.5 text-xs font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-yellow-300 disabled:opacity-50"
+            className="flex items-center gap-1.5 border-2 border-black bg-[#00D8F6] px-3 py-1.5 text-xs font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-[#22D3EE] disabled:opacity-50"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
             <span>{isSyncing ? 'Syncing...' : 'Sync Now'}</span>
@@ -318,7 +318,7 @@ export const DataSourceSettingsView: React.FC<DataSourceSettingsViewProps> = ({
             <button
               type="submit"
               disabled={isSaving}
-              className="border-2 border-black bg-black px-4 py-2 text-xs font-black uppercase text-white shadow-[2px_2px_0px_#FFE600] hover:bg-neutral-800 disabled:opacity-50"
+              className="border-2 border-black bg-black px-4 py-2 text-xs font-black uppercase text-white shadow-[2px_2px_0px_#00D8F6] hover:bg-neutral-800 disabled:opacity-50"
             >
               {isSaving ? 'Saving...' : 'Save Settings'}
             </button>
@@ -355,7 +355,7 @@ export const DataSourceSettingsView: React.FC<DataSourceSettingsViewProps> = ({
           value={serviceAccountJson}
           onChange={(e) => setServiceAccountJson(e.target.value)}
           placeholder='{"type": "service_account", "project_id": "...", "private_key": "...", "client_email": "..."}'
-          className="w-full border-2 border-black p-2 font-mono text-xs focus:outline-none focus:bg-yellow-50"
+          className="w-full border-2 border-black p-2 font-mono text-xs focus:outline-none focus:bg-cyan-50/40"
         />
 
         <div className="mt-3 flex items-center justify-between">
@@ -368,7 +368,7 @@ export const DataSourceSettingsView: React.FC<DataSourceSettingsViewProps> = ({
             type="button"
             onClick={handleSaveServiceAccount}
             disabled={!serviceAccountJson.trim()}
-            className="ml-auto border-2 border-black bg-[#FFE600] px-4 py-1.5 text-xs font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-yellow-300 disabled:opacity-50"
+            className="ml-auto border-2 border-black bg-[#00D8F6] px-4 py-1.5 text-xs font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-[#22D3EE] disabled:opacity-50"
           >
             Save Service Account Key
           </button>
@@ -447,14 +447,14 @@ export const DataSourceSettingsView: React.FC<DataSourceSettingsViewProps> = ({
           value={manualCsv}
           onChange={(e) => setManualCsv(e.target.value)}
           placeholder="Paste CSV starting with UID,Event,Type,Status,From..."
-          className="w-full border-2 border-black p-2 font-mono text-xs focus:outline-none focus:bg-yellow-50"
+          className="w-full border-2 border-black p-2 font-mono text-xs focus:outline-none focus:bg-cyan-50/40"
         />
 
         <div className="mt-3 flex justify-end">
           <button
             onClick={handleUploadCsvSubmit}
             disabled={!manualCsv.trim()}
-            className="border-2 border-black bg-[#FFE600] px-4 py-1.5 text-xs font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-yellow-300 disabled:opacity-50"
+            className="border-2 border-black bg-[#00D8F6] px-4 py-1.5 text-xs font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-[#22D3EE] disabled:opacity-50"
           >
             Upload & Process CSV
           </button>

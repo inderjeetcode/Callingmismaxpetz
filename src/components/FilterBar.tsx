@@ -52,8 +52,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
                 onClick={() => onFilterChange({ datePreset: preset.id })}
                 className={`border-2 border-black px-2.5 py-1 text-xs font-black transition-all ${
                   isSelected
-                    ? 'bg-[#FFE600] text-black shadow-[2px_2px_0px_#000]'
-                    : 'bg-white text-gray-800 hover:bg-gray-100'
+                    ? 'bg-[#581C87] text-white shadow-[2px_2px_0px_#00D8F6]'
+                    : 'bg-white text-gray-800 hover:bg-purple-50 hover:text-[#581C87]'
                 }`}
               >
                 {preset.label}
@@ -70,7 +70,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
 
       {/* Custom Date Range Picker (shown when custom is selected) */}
       {filters.datePreset === 'custom' && (
-        <div className="mt-2.5 flex flex-wrap items-center gap-2 border-2 border-black bg-[#FFE600]/20 p-2 text-xs font-bold">
+        <div className="mt-2.5 flex flex-wrap items-center gap-2 border-2 border-black bg-cyan-50 p-2 text-xs font-bold">
           <span>Custom Start:</span>
           <input
             type="date"
@@ -99,7 +99,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         <select
           value={filters.department}
           onChange={(e) => onFilterChange({ department: e.target.value })}
-          className="border-2 border-black bg-white px-2 py-1 text-xs font-bold text-black"
+          className="border-2 border-black bg-white px-2 py-1 text-xs font-bold text-black focus:outline-none focus:ring-2 focus:ring-[#00D8F6]"
         >
           <option value="all">All Departments</option>
           {departments.map((dept) => (
@@ -113,7 +113,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         <select
           value={filters.staff}
           onChange={(e) => onFilterChange({ staff: e.target.value })}
-          className="border-2 border-black bg-white px-2 py-1 text-xs font-bold text-black max-w-[160px] truncate"
+          className="border-2 border-black bg-white px-2 py-1 text-xs font-bold text-black max-w-[160px] truncate focus:outline-none focus:ring-2 focus:ring-[#00D8F6]"
         >
           <option value="all">All Staff</option>
           {staffMembers.map((staff) => (
@@ -127,7 +127,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         <select
           value={filters.event}
           onChange={(e) => onFilterChange({ event: e.target.value as any })}
-          className="border-2 border-black bg-white px-2 py-1 text-xs font-bold text-black"
+          className="border-2 border-black bg-white px-2 py-1 text-xs font-bold text-black focus:outline-none focus:ring-2 focus:ring-[#00D8F6]"
         >
           <option value="all">All Events</option>
           <option value="Incoming">Incoming Calls</option>
@@ -138,7 +138,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         <select
           value={filters.status}
           onChange={(e) => onFilterChange({ status: e.target.value as any })}
-          className="border-2 border-black bg-white px-2 py-1 text-xs font-bold text-black"
+          className="border-2 border-black bg-white px-2 py-1 text-xs font-bold text-black focus:outline-none focus:ring-2 focus:ring-[#00D8F6]"
         >
           <option value="all">All Statuses</option>
           <option value="Connected">Connected Only</option>
@@ -153,14 +153,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             placeholder="Search UID, phone, staff, note..."
             value={filters.searchQuery}
             onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
-            className="w-full border-2 border-black bg-white py-1 pl-8 pr-3 text-xs font-bold text-black placeholder:text-gray-400 focus:outline-none focus:bg-[#FFE600]/10"
+            className="w-full border-2 border-black bg-white py-1 pl-8 pr-3 text-xs font-bold text-black placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00D8F6]"
           />
         </div>
 
         {/* Reset */}
         <button
           onClick={onResetFilters}
-          className="flex items-center gap-1 border-2 border-black bg-gray-100 px-2.5 py-1 text-xs font-black text-black hover:bg-gray-200 active:translate-x-0.5 active:translate-y-0.5"
+          className="flex items-center gap-1 border-2 border-black bg-gray-100 px-2.5 py-1 text-xs font-black text-black hover:bg-purple-50 hover:text-[#581C87] active:translate-x-0.5 active:translate-y-0.5"
           title="Reset all filters"
         >
           <RotateCcw className="h-3 w-3" />

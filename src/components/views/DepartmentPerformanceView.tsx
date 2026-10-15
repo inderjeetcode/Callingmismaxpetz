@@ -97,7 +97,7 @@ export const DepartmentPerformanceView: React.FC<DepartmentPerformanceViewProps>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-xs">
             <thead>
-              <tr className="border-b-2 border-black bg-[#FFE600] font-black uppercase text-black">
+              <tr className="border-b-2 border-black bg-[#00D8F6] font-black uppercase text-black">
                 <th className="border-r-2 border-black p-2.5 text-left">Department</th>
                 <th className="border-r-2 border-black p-2.5 text-right">Total Calls</th>
                 <th className="border-r-2 border-black p-2.5 text-right">Incoming</th>

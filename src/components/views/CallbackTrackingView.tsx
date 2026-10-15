@@ -77,8 +77,8 @@ export const CallbackTrackingView: React.FC<CallbackTrackingViewProps> = ({
             onClick={() => setStatusFilter(tab.id)}
             className={`border-2 border-black px-2.5 py-1 text-xs font-black transition-all ${
               statusFilter === tab.id
-                ? 'bg-[#FFE600] text-black shadow-[2px_2px_0px_#000]'
-                : 'bg-white text-gray-800 hover:bg-gray-100'
+                ? 'bg-[#581C87] text-white shadow-[2px_2px_0px_#00D8F6]'
+                : 'bg-white text-gray-800 hover:bg-purple-50 hover:text-[#581C87]'
             }`}
           >
             {tab.label}
@@ -91,7 +91,7 @@ export const CallbackTrackingView: React.FC<CallbackTrackingViewProps> = ({
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-xs">
             <thead>
-              <tr className="border-b-2 border-black bg-[#FFE600] font-black uppercase text-black">
+              <tr className="border-b-2 border-black bg-[#581C87] font-black uppercase text-white">
                 <th className="border-r-2 border-black p-2.5 text-left">Missed Call UID / Time</th>
                 <th className="border-r-2 border-black p-2.5 text-left">Customer</th>
                 <th className="border-r-2 border-black p-2.5 text-left">Outbound Call UID</th>
@@ -116,13 +116,13 @@ export const CallbackTrackingView: React.FC<CallbackTrackingViewProps> = ({
                   if (item.status === 'Confirmed Successful') statusBg = 'bg-[#00D26A] text-black';
                   else if (item.status === 'Estimated Connected') statusBg = 'bg-emerald-100 text-emerald-800';
                   else if (item.status === 'Estimated Attempt') statusBg = 'bg-amber-100 text-amber-800';
-                  else if (item.status === 'Ambiguous Match') statusBg = 'bg-[#FFE600] text-black';
+                  else if (item.status === 'Ambiguous Match') statusBg = 'bg-cyan-100 text-cyan-900';
                   else if (item.status === 'Pending') statusBg = 'bg-[#FF334B] text-white';
 
                   return (
                     <tr
                       key={item.missedCallUid}
-                      className="border-b border-black font-semibold hover:bg-yellow-50 transition-colors"
+                      className="border-b border-black font-semibold hover:bg-purple-50/50 transition-colors"
                     >
                       <td className="border-r-2 border-black p-2.5">
                         <div className="font-mono font-bold text-black">{item.missedCallUid}</div>
@@ -214,7 +214,7 @@ export const CallbackTrackingView: React.FC<CallbackTrackingViewProps> = ({
                       <td className="p-2.5 text-center">
                         <button
                           onClick={() => onOpenTriageModal(item)}
-                          className="border-2 border-black bg-white px-2.5 py-1 text-[11px] font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-[#FFE600] active:translate-x-0.5 active:translate-y-0.5"
+                          className="border-2 border-black bg-white px-2.5 py-1 text-[11px] font-black uppercase text-black shadow-[2px_2px_0px_#000] hover:bg-[#00D8F6] active:translate-x-0.5 active:translate-y-0.5"
                         >
                           Verify
                         </button>
