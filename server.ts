@@ -430,6 +430,20 @@ app.post('/api/settings', (req, res) => {
   res.json({ success: true, settings: currentSettings });
 });
 
+// Explicit JSON 404 for unhandled API routes — prevents falling through to Vite SPA HTML
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ success: false, error: `API route not found: ${req.method} ${req.path}` });
+});
+
+// Global API error handler ensuring JSON response
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('API Error:', req.method, req.path, err);
+  if (req.path.startsWith('/api')) {
+    return res.status(500).json({ success: false, error: err?.message || 'Internal Server Error' });
+  }
+  next(err);
+});
+
 // ==================== VITE & STATIC HANDLING ====================
 
 async function startServer() {
@@ -455,6 +469,13 @@ async function startServer() {
   });
 }
 
-startServer().catch((err) => {
-  console.error('Fatal server startup error:', err);
-});
+// Start server if not running inside a serverless handler
+if (!process.env.VERCEL) {
+  startServer().catch((err) => {
+    console.error('Fatal server startup error:', err);
+  });
+}
+
+export default app;
+export { app };
+

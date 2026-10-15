@@ -40,6 +40,19 @@ import { CallbackTriageModal } from './components/CallbackTriageModal';
 import { AuditTrailModal } from './components/AuditTrailModal';
 import { AutomatedTestRunner } from './components/AutomatedTestRunner';
 
+import {
+  directClientFetchGoogleSheet,
+  getLocalAuditLogs,
+  getLocalCachedCsv,
+  getLocalCallbacks,
+  getLocalSettings,
+  safeFetchJson,
+  saveLocalAuditLogs,
+  saveLocalCachedCsv,
+  saveLocalCallbacks,
+  saveLocalSettings,
+} from './services/apiClient';
+
 const INITIAL_FILTERS: FilterState = {
   datePreset: 'all',
   department: 'all',
@@ -61,23 +74,25 @@ export default function App() {
   const [nextRefreshInSeconds, setNextRefreshInSeconds] = useState(300); // 5 mins
 
   // Backend settings & persistent callback store
-  const [settings, setSettings] = useState<DataSourceSettings>({
-    spreadsheetId: '170_JWT44cFX0QIvJ62KeLqe9io3hTkuNYJosVs2oCBA',
-    tabName: 'Main data',
-    callbackMatchingWindowHours: 24,
-    autoRefreshIntervalMinutes: 5,
-    managementAnswerRateTarget: 85,
-    timezone: 'Asia/Kolkata',
-    lastSyncTime: new Date().toISOString(),
-    lastSuccessfulLiveSyncTime: null,
-    recordCount: 0,
-    connectionStatus: 'Offline / Cached Data',
-    columnsDetected: [],
-    missingRequiredColumns: [],
+  const [settings, setSettings] = useState<DataSourceSettings>(() => {
+    return getLocalSettings({
+      spreadsheetId: '170_JWT44cFX0QIvJ62KeLqe9io3hTkuNYJosVs2oCBA',
+      tabName: 'Main data',
+      callbackMatchingWindowHours: 24,
+      autoRefreshIntervalMinutes: 5,
+      managementAnswerRateTarget: 85,
+      timezone: 'Asia/Kolkata',
+      lastSyncTime: new Date().toISOString(),
+      lastSuccessfulLiveSyncTime: null,
+      recordCount: 0,
+      connectionStatus: 'Offline / Cached Data',
+      columnsDetected: [],
+      missingRequiredColumns: [],
+    });
   });
 
-  const [callbackConfirmations, setCallbackConfirmations] = useState<Map<string, CallbackStoreRecord>>(new Map());
-  const [auditLogs, setAuditLogs] = useState<CallbackAuditLog[]>([]);
+  const [callbackConfirmations, setCallbackConfirmations] = useState<Map<string, CallbackStoreRecord>>(() => getLocalCallbacks());
+  const [auditLogs, setAuditLogs] = useState<CallbackAuditLog[]>(() => getLocalAuditLogs());
 
   // Modals state
   const [triageMatch, setTriageMatch] = useState<CallbackMatch | null>(null);
@@ -90,45 +105,65 @@ export default function App() {
     latencyMs?: number;
   } | null>(null);
 
-  // Initialize with verified seed data immediately
+  // Initialize with verified seed or cached data immediately
   useEffect(() => {
-    const initialParsed = parseSpreadsheetData(RAW_MAIN_DATA_CSV);
+    const cachedCsv = getLocalCachedCsv() || RAW_MAIN_DATA_CSV;
+    const initialParsed = parseSpreadsheetData(cachedCsv);
     setAllRecords(initialParsed.records);
-    setSettings((prev) => ({
-      ...prev,
-      recordCount: initialParsed.records.length,
-      columnsDetected: initialParsed.headers,
-      missingRequiredColumns: initialParsed.missingRequired,
-    }));
+    setSettings((prev) => {
+      const updated = {
+        ...prev,
+        recordCount: initialParsed.records.length,
+        columnsDetected: initialParsed.headers,
+        missingRequiredColumns: initialParsed.missingRequired,
+      };
+      saveLocalSettings(updated);
+      return updated;
+    });
   }, []);
 
-  // Fetch live data & settings from Express backend
+  // Fetch live data & settings from Express backend if available
   const loadBackendData = useCallback(async () => {
     try {
       const [sheetsRes, callbacksRes] = await Promise.all([
-        fetch('/api/sheets/data').then((r) => (r.ok ? r.json() : null)),
-        fetch('/api/callbacks').then((r) => (r.ok ? r.json() : null)),
+        safeFetchJson<{
+          success: boolean;
+          records?: ParsedCallRecord[];
+          settings?: DataSourceSettings;
+          csv?: string;
+        }>('/api/sheets/data'),
+        safeFetchJson<{
+          success: boolean;
+          confirmations?: Record<string, CallbackStoreRecord>;
+          auditLogs?: CallbackAuditLog[];
+        }>('/api/callbacks'),
       ]);
 
-      if (sheetsRes && sheetsRes.records && sheetsRes.records.length > 0) {
-        setAllRecords(sheetsRes.records);
-        if (sheetsRes.settings) {
-          setSettings(sheetsRes.settings);
+      if (sheetsRes.ok && sheetsRes.data?.records && sheetsRes.data.records.length > 0) {
+        setAllRecords(sheetsRes.data.records);
+        if (sheetsRes.data.csv) {
+          saveLocalCachedCsv(sheetsRes.data.csv);
+        }
+        if (sheetsRes.data.settings) {
+          setSettings(sheetsRes.data.settings);
+          saveLocalSettings(sheetsRes.data.settings);
         }
       }
 
-      if (callbacksRes && callbacksRes.confirmations) {
+      if (callbacksRes.ok && callbacksRes.data?.confirmations) {
         const map = new Map<string, CallbackStoreRecord>();
-        Object.entries(callbacksRes.confirmations).forEach(([k, v]) => {
+        Object.entries(callbacksRes.data.confirmations).forEach(([k, v]) => {
           map.set(k, v as CallbackStoreRecord);
         });
         setCallbackConfirmations(map);
-        if (callbacksRes.auditLogs) {
-          setAuditLogs(callbacksRes.auditLogs);
+        saveLocalCallbacks(map);
+        if (callbacksRes.data.auditLogs) {
+          setAuditLogs(callbacksRes.data.auditLogs);
+          saveLocalAuditLogs(callbacksRes.data.auditLogs);
         }
       }
     } catch (err) {
-      console.log('Backend fetch fell back to client cache:', err);
+      console.log('Backend fetch fell back to client storage:', err);
     }
   }, []);
 
@@ -150,23 +185,77 @@ export default function App() {
     return () => clearInterval(interval);
   }, [settings.autoRefreshIntervalMinutes]);
 
-  // Manual Refresh
+  // Manual / Auto Refresh Data
   const handleRefreshData = async () => {
     setIsSyncing(true);
     try {
-      const res = await fetch('/api/sheets/sync', { method: 'POST' });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.records) {
-          setAllRecords(data.records);
-          if (data.settings) setSettings(data.settings);
+      // 1. First attempt through the backend sync endpoint
+      const res = await safeFetchJson<{
+        success: boolean;
+        liveSync?: boolean;
+        records?: ParsedCallRecord[];
+        settings?: DataSourceSettings;
+        status?: string;
+        error?: string;
+      }>('/api/sheets/sync', { method: 'POST' });
+
+      if (res.ok && res.data && res.data.records && res.data.records.length > 0) {
+        setAllRecords(res.data.records);
+        if (res.data.settings) {
+          setSettings(res.data.settings);
+          saveLocalSettings(res.data.settings);
+        }
+        setIsSyncing(false);
+        setNextRefreshInSeconds((settings.autoRefreshIntervalMinutes || 5) * 60);
+        return;
+      }
+
+      // 2. If backend is not available, returned HTML (e.g. Vercel SPA rewrite), or returned no records:
+      // Perform direct client-side synchronization from the browser!
+      const clientFetch = await directClientFetchGoogleSheet(
+        settings.spreadsheetId,
+        settings.tabName,
+        {
+          apiKey: settings.apiKey,
+          appsScriptUrl: settings.appsScriptUrl,
+        }
+      );
+
+      if (clientFetch.success && clientFetch.csv) {
+        const parsed = parseSpreadsheetData(clientFetch.csv);
+        if (parsed.records.length > 0) {
+          setAllRecords(parsed.records);
+          saveLocalCachedCsv(clientFetch.csv);
+
+          const now = new Date().toISOString();
+          const updatedSettings: DataSourceSettings = {
+            ...settings,
+            recordCount: parsed.records.length,
+            columnsDetected: parsed.headers,
+            missingRequiredColumns: parsed.missingRequired,
+            lastSyncTime: now,
+            lastSuccessfulLiveSyncTime: now,
+            connectionStatus: 'Connected',
+            authMethod: clientFetch.authMethod as any,
+            errorMessage: undefined,
+          };
+          setSettings(updatedSettings);
+          saveLocalSettings(updatedSettings);
         }
       } else {
-        // Fallback local refresh
-        loadBackendData();
+        // Failed: preserve previous records safely and report clear status
+        const now = new Date().toISOString();
+        const updatedSettings: DataSourceSettings = {
+          ...settings,
+          lastSyncTime: now,
+          connectionStatus: clientFetch.status,
+          errorMessage: clientFetch.errorMessage || 'Could not connect to Google Sheets.',
+        };
+        setSettings(updatedSettings);
+        saveLocalSettings(updatedSettings);
       }
-    } catch (err) {
-      console.error('Sync failed:', err);
+    } catch (err: any) {
+      console.error('Safe sync handled:', err);
     } finally {
       setIsSyncing(false);
       setNextRefreshInSeconds((settings.autoRefreshIntervalMinutes || 5) * 60);
@@ -176,23 +265,49 @@ export default function App() {
   // Test Connection
   const handleTestConnection = async () => {
     try {
-      const res = await fetch('/api/sheets/test-connection', {
+      const res = await safeFetchJson<{
+        connected: boolean;
+        message: string;
+        latencyMs?: number;
+      }>('/api/sheets/test-connection', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           spreadsheetId: settings.spreadsheetId,
           tabName: settings.tabName,
+          apiKey: settings.apiKey,
+          appsScriptUrl: settings.appsScriptUrl,
         }),
       });
-      if (res.ok) {
-        const data = await res.json();
+
+      if (res.ok && res.data) {
         setConnectionTestResult({
           tested: true,
-          connected: data.connected,
-          message: data.message,
-          latencyMs: data.latencyMs,
+          connected: res.data.connected,
+          message: res.data.message,
+          latencyMs: res.data.latencyMs,
         });
+        return;
       }
+
+      // Backend unavailable or returned HTML (e.g. Vercel static) — test directly in client!
+      const clientTest = await directClientFetchGoogleSheet(
+        settings.spreadsheetId,
+        settings.tabName,
+        {
+          apiKey: settings.apiKey,
+          appsScriptUrl: settings.appsScriptUrl,
+        }
+      );
+
+      setConnectionTestResult({
+        tested: true,
+        connected: clientTest.success,
+        message: clientTest.success
+          ? `Live Google Sheet verified via ${clientTest.authMethod} (${clientTest.latencyMs}ms)`
+          : clientTest.errorMessage || 'Could not connect to Google Sheets.',
+        latencyMs: clientTest.latencyMs,
+      });
     } catch (err: any) {
       setConnectionTestResult({
         tested: true,
@@ -204,20 +319,18 @@ export default function App() {
 
   // Save Settings
   const handleSaveSettings = async (updates: Partial<DataSourceSettings>) => {
+    const merged = { ...settings, ...updates };
+    setSettings(merged);
+    saveLocalSettings(merged);
+
     try {
-      const res = await fetch('/api/settings', {
+      await safeFetchJson('/api/settings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.settings) setSettings(data.settings);
-      } else {
-        setSettings((prev) => ({ ...prev, ...updates }));
-      }
-    } catch (err) {
-      setSettings((prev) => ({ ...prev, ...updates }));
+    } catch {
+      // Local settings are already safely persisted
     }
   };
 
@@ -225,25 +338,31 @@ export default function App() {
   const handleUploadCsv = async (csvText: string) => {
     setIsSyncing(true);
     try {
-      const res = await fetch('/api/sheets/upload-csv', {
+      const parsed = parseSpreadsheetData(csvText);
+      if (parsed.records.length > 0) {
+        setAllRecords(parsed.records);
+        saveLocalCachedCsv(csvText);
+
+        const updated: DataSourceSettings = {
+          ...settings,
+          recordCount: parsed.records.length,
+          columnsDetected: parsed.headers,
+          missingRequiredColumns: parsed.missingRequired,
+          lastSyncTime: new Date().toISOString(),
+          connectionStatus: 'Offline / Cached Data',
+          errorMessage: undefined,
+        };
+        setSettings(updated);
+        saveLocalSettings(updated);
+      }
+
+      await safeFetchJson('/api/sheets/upload-csv', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ csvText }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.records) {
-          setAllRecords(data.records);
-          if (data.settings) setSettings(data.settings);
-        }
-      } else {
-        // Client fallback
-        const parsed = parseSpreadsheetData(csvText);
-        setAllRecords(parsed.records);
-      }
-    } catch (err) {
-      const parsed = parseSpreadsheetData(csvText);
-      setAllRecords(parsed.records);
+    } catch (err: any) {
+      console.error('Error uploading CSV:', err);
     } finally {
       setIsSyncing(false);
     }
@@ -257,12 +376,6 @@ export default function App() {
     notes: string
   ) => {
     try {
-      const res = await fetch('/api/callbacks/confirm', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ missedCallUid, status, verifiedBy, notes }),
-      });
-
       const updatedRecord: CallbackStoreRecord = {
         missedCallUid,
         status,
@@ -274,15 +387,32 @@ export default function App() {
       setCallbackConfirmations((prev) => {
         const next = new Map(prev);
         next.set(missedCallUid, updatedRecord);
+        saveLocalCallbacks(next);
         return next;
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.auditEntry) {
-          setAuditLogs((prev) => [data.auditEntry, ...prev]);
-        }
-      }
+      const previousStatus = callbackConfirmations.get(missedCallUid)?.status || 'Pending';
+      const localAuditEntry: CallbackAuditLog = {
+        id: `audit-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        missedCallUid,
+        previousStatus,
+        newStatus: status,
+        changedBy: verifiedBy || 'Staff User',
+        timestamp: new Date().toISOString(),
+        note: notes || '',
+      };
+
+      setAuditLogs((prev) => {
+        const next = [localAuditEntry, ...prev];
+        saveLocalAuditLogs(next);
+        return next;
+      });
+
+      await safeFetchJson('/api/callbacks/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ missedCallUid, status, verifiedBy, notes }),
+      });
     } catch (err) {
       console.error('Error confirming callback:', err);
     }

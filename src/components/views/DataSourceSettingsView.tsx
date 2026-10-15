@@ -18,6 +18,7 @@ import {
   Table,
 } from 'lucide-react';
 import { ALL_EXPECTED_COLUMNS } from '../../services/dataParser';
+import { safeFetchJson } from '../../services/apiClient';
 
 interface DataSourceSettingsViewProps {
   settings: DataSourceSettings;
@@ -84,22 +85,21 @@ export const DataSourceSettingsView: React.FC<DataSourceSettingsViewProps> = ({
   const handleSaveServiceAccount = async () => {
     if (!serviceAccountJson.trim()) return;
     try {
-      const res = await fetch('/api/sheets/service-account', {
+      const res = await safeFetchJson<{ success: boolean; error?: string }>('/api/sheets/service-account', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ credentialsJson: serviceAccountJson }),
       });
-      if (res.ok) {
+      if (res.ok && res.data?.success) {
         setServiceAccountSaved(true);
         setServiceAccountJson('');
         setTimeout(() => setServiceAccountSaved(false), 4000);
         onRefreshData();
       } else {
-        const data = await res.json();
-        alert(data.error || 'Failed to parse service account JSON');
+        console.warn('Failed to save service account:', res.data?.error || res.errorMessage);
       }
     } catch (err: any) {
-      alert('Error saving service account: ' + err.message);
+      console.error('Error saving service account:', err.message);
     }
   };
 
